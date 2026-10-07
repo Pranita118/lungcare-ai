@@ -6,15 +6,19 @@
 # Deploy with:  Infrastructure as Code -> New -> Blueprint -> pick this repo
 #
 # Why the models are trained during the build instead of being committed:
-# random-forest.pkl is ~315 MB and stacking-ensemble.pkl is ~311 MB. GitHub
-# refuses any file over 100 MB, so they cannot be in the repository. The dataset
-# that produces them is only ~3 MB and IS committed, so the build retrains and
-# the artifacts are reproducible rather than opaque binaries.
+# the tree ensembles are capped at depth 12 (see backend/app/models.py), which
+# keeps each artifact near 39 MB. The set is still regenerated here from the
+# committed dataset, so the deployed models are reproducible rather than opaque
+# binaries, and no large file ever has to enter the repository.
+#
+# NOTE on the service name: it must be unique across all of Render, not just
+# within your account. The name "lungcare-api" is already taken by an unrelated
+# "LungCare CT ONNX API" service, so this project uses a name tied to the repo
+# owner. The public URL becomes https://lungcare-ai-118.onrender.com
 
 services:
   - type: web
-    name: lungcare-api-118
-
+    name: lungcare-ai-118
     runtime: python
     plan: free
     rootDir: backend
