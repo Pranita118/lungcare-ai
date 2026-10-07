@@ -52,6 +52,15 @@ services:
       - key: PYTHON_VERSION
         value: "3.11.9"
 
+      # 0 disables the background pre-warm pool. Each worker is a separate
+      # interpreter that imports SHAP and loads a model, so the default of 4
+      # workers plus the parent needs roughly 1.1 GB and is killed on the 512 MB
+      # free tier with "Out of memory (used over 512Mi)". Disabling it is safe
+      # here because a cold global-importance computation now takes about half a
+      # second, so the cache can simply be filled lazily on first use.
+      - key: LUNGCARE_SHAP_WORKERS
+        value: "0"
+
       # Set this in the Render dashboard to your Netlify URL, e.g.
       #   https://lungcare-ai.netlify.app
       # Without it the browser blocks every request from the deployed front end.

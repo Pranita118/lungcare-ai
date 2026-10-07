@@ -118,19 +118,28 @@ def _warm_worker(model_id: str) -> tuple[str, dict]:
 
 def warm_global_importance(
     registry: ModelRegistry, model_ids: Optional[list[str]] = None, workers: int = 4
-) -> threading.Thread:
+) -> Optional[threading.Thread]:
     """Pre-compute the global-importance cache in background processes.
 
     Returns immediately. Any model that cannot be explained caches an empty
     overview rather than raising, so this can never break start-up. If the pool
     cannot be created the cache simply stays cold and is computed lazily on first
     use instead.
+
+    ``workers=0`` skips the pool entirely and returns None. Use that on a
+    memory-constrained host: every worker is a separate interpreter that imports
+    SHAP, so the pool can cost more memory than the whole service.
     """
+    if workers <= 0:
+        return None
+
     ids = model_ids if model_ids is not None else [
         model_id
         for model_id, artifact in registry.artifacts.items()
         if artifact.is_trained
     ]
+    if not ids:
+        return None
     for model_id in ids:
         _ready_event(model_id, create=True)
 

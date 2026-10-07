@@ -21,6 +21,20 @@ UPPER_THRESHOLD = 0.60
 SUPPORTED_IMAGE_TYPES = {"image/png", "image/jpeg", "image/jpg", "image/dicom"}
 
 
+def _shap_warm_workers() -> int:
+    """How many processes may pre-compute global SHAP importance (0 = never).
+
+    Each worker is a whole extra interpreter holding SHAP and a model, so the
+    default of 4 costs roughly 1.1 GB in total. Hosts with less memory than that
+    must set LUNGCARE_SHAP_WORKERS=0, which is safe because a cold global summary
+    now costs about half a second rather than a minute.
+    """
+    try:
+        return max(0, int(os.getenv("LUNGCARE_SHAP_WORKERS", "4")))
+    except ValueError:
+        return 4
+
+
 def _cors_origins() -> list[str]:
     """Browser origins allowed to call this service.
 
@@ -54,6 +68,18 @@ class Settings:
     upper_threshold: float = UPPER_THRESHOLD
     max_upload_bytes: int = 12 * 1024 * 1024
     cors_origins: list[str] = field(default_factory=_cors_origins)
+    #: Background worker processes used to pre-compute global SHAP importance.
+    #:
+    #: Pre-warming originally existed because a cold global summary took over a
+    #: minute, which was too slow to compute inside a request. That is no longer
+    #: true: with the depth-capped forest the same computation takes about half a
+    #: second, so the pool has nothing left to hide.
+    #:
+    #: It is also expensive. Each worker is a separate interpreter that imports
+    #: SHAP and loads a model, so four workers plus the parent need roughly
+    #: 1.1 GB and the service is killed on a 512 MB host. Set this to 0 on a
+    #: memory-constrained host to compute lazily in-process instead.
+    shap_warm_workers: int = _shap_warm_workers()
 
     def primary_dataset(self) -> Path:
         return self.data_dir / "lung_cancer_dataset.csv"

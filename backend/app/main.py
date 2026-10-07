@@ -110,15 +110,19 @@ def on_startup() -> None:
         _startup_error = str(error)
         return
 
-    # Global feature importance does not depend on the patient, and TreeSHAP over
-    # a large forest is expensive. Pre-compute it off the request path so the
-    # first explanation request does not block on it.
-    threading.Thread(
-        target=explain_module.warm_global_importance,
-        args=(registry,),
-        name="shap-warmup",
-        daemon=True,
-    ).start()
+    # Global feature importance does not depend on the patient, so it is normally
+    # pre-computed off the request path. The number of worker processes is
+    # configurable: each worker is a separate interpreter that imports SHAP and
+    # loads a model, so on a small host the pool costs more memory than the whole
+    # service. With LUNGCARE_SHAP_WORKERS=0 nothing is spawned and the summary is
+    # computed lazily on first use instead, which costs about half a second.
+    if settings.shap_warm_workers > 0:
+        threading.Thread(
+            target=explain_module.warm_global_importance,
+            args=(registry, None, settings.shap_warm_workers),
+            name="shap-warmup",
+            daemon=True,
+        ).start()
 
 
 # --------------------------------------------------------------------------- health
