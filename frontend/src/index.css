@@ -1,0 +1,266 @@
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/manrope';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ==========================================================================
+   Theme tokens
+   Brand hues stay identical in both themes so that clinical status colours keep
+   their meaning. Only surfaces, borders, text and shadows are re-declared.
+   ========================================================================== */
+
+@layer base {
+  :root {
+    color-scheme: light;
+
+    /* Themed tints (pale shades used as backgrounds) */
+    --medical-50: #eaf4ff;
+    --medical-100: #d6e9fb;
+    --teal-50: #e6f6f6;
+    --teal-100: #c8ecec;
+
+    --success-ink: #1f6b55;
+    --warning-ink: #8a6212;
+    --danger-ink: #8e3b3b;
+
+    --tint-medical: rgba(214, 233, 251, 0.7);
+    --tint-teal: rgba(200, 236, 236, 0.6);
+    --tint-warning: rgba(217, 154, 43, 0.08);
+    --tint-danger: rgba(217, 92, 92, 0.08);
+    --tint-success: rgba(46, 139, 112, 0.08);
+
+    --canvas: #f5f9fc;
+    --surface: #ffffff;
+    --surface-subtle: #fbfdfe;
+    --surface-muted: #f1f5f9;
+
+    --hairline: #e5eef5;
+    --hairline-strong: #cbd9e3;
+    --track: #e8f0f6;
+    --viewer: #0b2436;
+    --sheen-from: #f5fafe;
+    --sheen-to: #f3fafa;
+    --shimmer: #eef4f8;
+
+    --ink: #12304a;
+    --ink-soft: #4a6377;
+    --ink-muted: #7c93a5;
+
+    --shadow-card: 0 4px 20px rgba(20, 70, 100, 0.08);
+    --shadow-card-hover: 0 10px 28px rgba(20, 70, 100, 0.13);
+    --shadow-panel: 0 8px 34px rgba(20, 70, 100, 0.1);
+
+    --grid-line: rgba(11, 92, 173, 0.045);
+    --glow:
+      radial-gradient(900px 420px at 12% -8%, rgba(11, 92, 173, 0.1), transparent 62%),
+      radial-gradient(760px 380px at 88% 4%, rgba(15, 139, 141, 0.09), transparent 60%);
+    --hero-a: #f2f8ff;
+    --hero-b: #eff9f9;
+
+    --chart-medical: #0b5cad;
+    --chart-medical-soft: #79b6ec;
+    --chart-medical-pale: #c6e0f6;
+    --chart-teal: #0f8b8d;
+    --chart-teal-soft: #57bdbf;
+    --chart-teal-pale: #b9e2e2;
+    --chart-success: #2e8b70;
+    --chart-warning: #d99a2b;
+    --chart-danger: #d95c5c;
+    --chart-grid: #eaf1f6;
+    --chart-axis: #8aa1b2;
+    --chart-text: #4a6377;
+  }
+
+  .dark {
+    color-scheme: dark;
+
+    /* Tints become deep, low-glare backgrounds rather than pale washes. */
+    --medical-50: #16293a;
+    --medical-100: #1c3448;
+    --teal-50: #10302f;
+    --teal-100: #163c3b;
+
+    --success-ink: #7fd7bb;
+    --warning-ink: #f0c579;
+    --danger-ink: #f3a0a0;
+
+    --tint-medical: rgba(28, 52, 72, 0.7);
+    --tint-teal: rgba(22, 60, 59, 0.6);
+    --tint-warning: rgba(217, 154, 43, 0.14);
+    --tint-danger: rgba(217, 92, 92, 0.14);
+    --tint-success: rgba(46, 139, 112, 0.14);
+
+    --canvas: #0b1720;
+    --surface: #132431;
+    --surface-subtle: #162a38;
+    --surface-muted: #1b3242;
+
+    --hairline: #23404f;
+    --hairline-strong: #35596d;
+    --track: #1c3546;
+    --viewer: #07131b;
+    --sheen-from: #1a3140;
+    --sheen-to: #16302f;
+    --shimmer: #23404f;
+
+    --ink: #e8f1f8;
+    --ink-soft: #b4c8d6;
+    --ink-muted: #8299a9;
+
+    --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.34);
+    --shadow-card-hover: 0 10px 28px rgba(0, 0, 0, 0.44);
+    --shadow-panel: 0 8px 34px rgba(0, 0, 0, 0.4);
+
+    --grid-line: rgba(121, 182, 236, 0.06);
+    --glow:
+      radial-gradient(900px 420px at 12% -8%, rgba(11, 92, 173, 0.22), transparent 62%),
+      radial-gradient(760px 380px at 88% 4%, rgba(15, 139, 141, 0.16), transparent 60%);
+    --hero-a: #142a39;
+    --hero-b: #102b32;
+
+    --chart-medical: #4795de;
+    --chart-medical-soft: #2a6ea8;
+    --chart-medical-pale: #1d3d57;
+    --chart-teal: #2aa0a2;
+    --chart-teal-soft: #237a7c;
+    --chart-teal-pale: #1a4a4b;
+    --chart-success: #4fae91;
+    --chart-warning: #d99a2b;
+    --chart-danger: #e07373;
+    --chart-grid: #21394a;
+    --chart-axis: #7d95a6;
+    --chart-text: #b4c8d6;
+  }
+
+  * {
+    @apply border-hairline;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-canvas text-ink font-sans antialiased;
+    font-feature-settings: 'cv11', 'ss01';
+    font-variant-numeric: tabular-nums;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display text-ink;
+    letter-spacing: -0.014em;
+  }
+
+  /* Visible, consistent focus treatment for keyboard users. */
+  :focus-visible {
+    @apply outline-none ring-4 ring-medical-500/15 border-transparent;
+  }
+
+  ::selection {
+    @apply bg-medical-500/15 text-medical-900;
+  }
+
+  .dark ::selection {
+    @apply text-medical-100;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-medical-200/70 border-2 border-solid border-transparent bg-clip-content;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-medical-300/80 bg-clip-content;
+  }
+  .dark ::-webkit-scrollbar-thumb {
+    @apply bg-medical-500/40;
+  }
+}
+
+@layer components {
+  .bg-grid-faint {
+    background-image: linear-gradient(
+        to right,
+        var(--grid-line) 1px,
+        transparent 1px
+      ),
+      linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+
+  .card {
+    @apply rounded-card border border-hairline bg-surface shadow-card;
+  }
+
+  .card-hover {
+    @apply transition-[box-shadow,transform] duration-200 ease-out hover:-translate-y-0.5 hover:shadow-card-hover;
+  }
+
+  .focus-ring {
+    @apply focus:outline-none focus-visible:ring-4 focus-visible:ring-medical-500/15;
+  }
+
+  .divider {
+    @apply h-px w-full bg-hairline;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .text-pretty {
+    text-wrap: pretty;
+  }
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+  .sr-only-focusable:not(:focus):not(:focus-within) {
+    @apply sr-only;
+  }
+}
+
+@media print {
+  body {
+    background: #ffffff;
+    color: #000000;
+  }
+  .dark body {
+    color: #000000;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-plain {
+    box-shadow: none !important;
+    border-color: #d7e3ec !important;
+    background: #ffffff !important;
+  }
+  .print-break {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  @page {
+    margin: 14mm;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

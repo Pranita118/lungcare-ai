@@ -1,0 +1,44 @@
+# Netlify configuration for the LungCare AI front end.
+#
+# The repo is a monorepo (backend/ + frontend/), so the build runs from the repo
+# root and installs the front end itself.
+#
+# Before the first deploy, set this environment variable in the Netlify UI
+# (Site settings -> Environment variables), pointing at your deployed API:
+#
+#   VITE_API_BASE_URL = https://lungcare-api.onrender.com
+#
+# With it unset the built app falls back to the Vite dev proxy, which does not
+# exist in production, so every request would fail.
+
+[build]
+  base = "."
+  command = "cd frontend && npm ci && npm run build"
+  publish = "frontend/dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+  # tsc -b runs as part of `npm run build`; a type error should fail the build
+  # rather than ship a broken bundle.
+  CI = "true"
+
+# The front end uses react-router's BrowserRouter, so a deep link such as
+# /read-my-report is a real path the browser requests from the server. Without
+# this rule Netlify would answer those requests with a 404.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Never cache the HTML shell: it references hashed asset filenames, and a stale
+# copy would point at assets that no longer exist.
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+
+# Hashed assets are immutable, so they can be cached indefinitely.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

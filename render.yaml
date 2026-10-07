@@ -1,0 +1,61 @@
+# Render blueprint for the LungCare AI ML service.
+#
+# This file lives at the REPOSITORY ROOT because that is where Render looks for
+# it. The service itself is rooted at backend/ via rootDir below.
+#
+# Deploy with:  Infrastructure as Code -> New -> Blueprint -> pick this repo
+#
+# Why the models are trained during the build instead of being committed:
+# random-forest.pkl is ~315 MB and stacking-ensemble.pkl is ~311 MB. GitHub
+# refuses any file over 100 MB, so they cannot be in the repository. The dataset
+# that produces them is only ~3 MB and IS committed, so the build retrains and
+# the artifacts are reproducible rather than opaque binaries.
+
+services:
+  - type: web
+    name: lungcare-api
+    runtime: python
+    plan: free
+    rootDir: backend
+
+    # Installs dependencies, then retrains every model from the committed
+    # dataset. The artifacts land in the deployed filesystem.
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt && python -m app.train
+
+    # 0.0.0.0 is required: Render connects to the container over the network and
+    # cannot reach a server bound to localhost only.
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+
+    healthCheckPath: /api/health
+
+    # ---- Memory plan: read this before choosing ----
+    # plan: free      -> 512 MB RAM.
+    #                   Works only with a depth-capped Random Forest (see
+    #                   backend/app/models.py). Expect the service to spin down
+    #                   after ~15 min idle, so the first request after a pause
+    #                   can take 40-60 s while SHAP imports and artifacts load.
+    # plan: starter   -> 512 MB RAM, $7/mo. Same RAM as free, so it does NOT
+    #                   solve the memory problem; it only removes the spin-down.
+    # plan: standard  -> 2 GB RAM, $25/mo. Required if the model is kept at
+    #                   max_depth=None, which needs ~485 MB resident just to
+    #                   hold the deserialised forest.
+    #
+    # To change: set `plan:` above to `standard` and raise the cap in
+    # models.py back to max_depth=None.
+
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.9"
+
+      # Set this in the Render dashboard to your Netlify URL, e.g.
+      #   https://lungcare-ai.netlify.app
+      # Without it the browser blocks every request from the deployed front end.
+      - key: LUNGCARE_CORS_ORIGINS
+        sync: false
+
+      # Optional: keep artifacts/data on a persistent disk instead of the
+      # ephemeral build filesystem. Not needed when training at build time.
+      # - key: LUNGCARE_ARTIFACT_DIR
+      #   value: /var/data/artifacts
+      # - key: LUNGCARE_DATA_DIR
+      #   value: /var/data/data
